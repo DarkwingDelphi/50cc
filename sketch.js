@@ -1,112 +1,93 @@
-let player;
+
+let car;
+let carX;
+let speed = 5;
 let doors = [];
 let distance = 0;
-let speed = 2;
-let leftPressed = false;
-let rightPressed = false;
-let gameOver = false;
-let rainbowOffset = 0;
+let moveDir = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
-  textSize(24);
-  player = {
-    x: width / 2,
-    y: height - 80,
-    size: 30
-  };
-
-  for (let i = 0; i < 10; i++) {
-    doors.push({
-      x: random(width),
-      y: random(-1000, 0)
-    });
-  }
+  textSize(32);
+  car = "C50C";
+  carX = width / 2;
 }
 
 function draw() {
-  drawRainbowBackground();
+  setGradientBackground();
 
-  if (gameOver) {
-    fill(255);
-    textSize(32);
-    text("You crashed!
-Distance: " + distance, width / 2, height / 2);
-    return;
-  }
+  fill(255);
+  text("Distance: " + distance, width / 2, 30);
 
+  drawCar();
+  updateDoors();
+  checkCollision();
+
+  carX += moveDir * 10;
+  carX = constrain(carX, 0, width);
+
+  distance++;
+}
+
+function drawCar() {
   fill(0, 255, 0);
-  textSize(32);
-  text("C50C", player.x, player.y);
+  text(car, carX, height - 100);
+}
 
-  for (let door of doors) {
+function updateDoors() {
+  for (let i = doors.length - 1; i >= 0; i--) {
+    doors[i].y += speed;
     fill(255, 165, 0);
-    textSize(24);
-    text("D00R", door.x, door.y);
-    door.y += speed;
-    if (collides(player, door)) {
-      gameOver = true;
+    text(doors[i].label, doors[i].x, doors[i].y);
+
+    if (doors[i].y > height) {
+      doors.splice(i, 1);
     }
   }
 
-  doors = doors.filter(door => door.y < height + 50);
-  while (doors.length < 10) {
+  if (frameCount % 30 === 0) {
     doors.push({
-      x: random(width),
-      y: random(-200, 0)
+      x: random(50, width - 50),
+      y: -50,
+      label: "D00R"
     });
   }
-
-  if (leftPressed) player.x -= 5;
-  if (rightPressed) player.x += 5;
-  player.x = constrain(player.x, 0, width);
-
-  distance += floor(speed);
-  speed += 0.001;
-
-  fill(255);
-  textSize(16);
-  text("Distance: " + distance, width / 2, 20);
-
-  drawControls();
 }
 
-function drawControls() {
-  fill(100);
-  rect(0, height - 100, width / 2, 100);
-  rect(width / 2, height - 100, width / 2, 100);
-
-  fill(255);
-  textSize(48);
-  text("⬅️", width / 4, height - 50);
-  text("➡️", 3 * width / 4, height - 50);
-}
-
-function touchStarted() {
-  if (mouseY > height - 100) {
-    if (mouseX < width / 2) {
-      leftPressed = true;
-    } else {
-      rightPressed = true;
+function checkCollision() {
+  for (let door of doors) {
+    let d = dist(carX, height - 100, door.x, door.y);
+    if (d < 50) {
+      noLoop();
+      background(255, 0, 0);
+      fill(0);
+      text("CRASH! You made it " + distance + " units.", width / 2, height / 2);
     }
   }
 }
 
-function touchEnded() {
-  leftPressed = false;
-  rightPressed = false;
+function moveLeft() {
+  moveDir = -1;
 }
 
-function collides(p, d) {
-  return dist(p.x, p.y, d.x, d.y) < 30;
+function moveRight() {
+  moveDir = 1;
 }
 
-function drawRainbowBackground() {
+function stopMove() {
+  moveDir = 0;
+}
+
+function setGradientBackground() {
   for (let y = 0; y < height; y++) {
-    let hue = (y * 0.5 + rainbowOffset) % 360;
-    stroke(color('hsl(' + hue + ', 100%, 50%)'));
+    let inter = map(y, 0, height, 0, 1);
+    let c = lerpColor(color(255, 0, 0), color(0, 0, 255), inter);
+    stroke(c);
     line(0, y, width, y);
   }
-  rainbowOffset += 0.5;
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
