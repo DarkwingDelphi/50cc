@@ -1,39 +1,39 @@
 
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>C50C: Don't Touch the Door</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #controls {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        z-index: 10;
-      }
-      .btn {
-        width: 50%;
-        height: 100px;
-        font-size: 3em;
-        background-color: rgba(255, 255, 255, 0.3);
-        border: none;
-        color: black;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="controls">
-      <button class="btn" ontouchstart="moveLeft()" ontouchend="stopMove()">⬅️</button>
-      <button class="btn" ontouchstart="moveRight()" ontouchend="stopMove()">➡️</button>
-    </div>
-    <script src="sketch.js"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Don't Touch the Door</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    #controls {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+    button {
+      font-size: 40px;
+      padding: 20px;
+      background: #333;
+      color: white;
+      border-radius: 20px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <script src="sketch.js"></script>
+  <div id="controls">
+    <button onclick="moveLeft()">⬅️</button>
+    <button onclick="moveRight()">➡️</button>
+  </div>
+</body>
 </html>
