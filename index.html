@@ -9,12 +9,24 @@
         margin: 0;
         overflow: hidden;
       }
-      canvas {
-        display: block;
+      #controls {
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        font-size: 2rem;
+        font-family: monospace;
+        color: white;
       }
     </style>
   </head>
   <body>
+    <div id="controls">
+      <div id="left">[<<]</div>
+      <div id="right">[>>]</div>
+    </div>
     <script src="sketch.js"></script>
   </body>
 </html>

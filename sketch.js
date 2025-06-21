@@ -1,85 +1,48 @@
 
-let kart;
-let doors = [];
-let score = 0;
-let speed = 2;
+let playerX;
+let playerY;
+let playerSize = 40;
+let speed = 5;
+let distance = 0;
 let gameOver = false;
-let leftPressed = false;
-let rightPressed = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  kart = width / 2;
+  playerX = width / 2;
+  playerY = height - 100;
+  textAlign(CENTER, CENTER);
+  textSize(32);
 }
 
 function draw() {
   if (gameOver) {
     background(255, 0, 0);
-    fill(0);
-    textAlign(CENTER, CENTER);
-    textSize(32);
-    text("CRASH! You made it " + score + " meters", width / 2, height / 2);
+    fill(0, 0, 100);
+    text("CRASH! You made it " + distance + " meters", width / 2, height / 2);
     return;
   }
 
-  // Rainbow background gradient
-  for (let y = 0; y < height; y++) {
-    stroke(lerpColor(color("#ff0000"), color("#0000ff"), y / height));
-    line(0, y, width, y);
-  }
+  background(lerpColor(color('#ff0080'), color('#00ffff'), sin(frameCount * 0.01) * 0.5 + 0.5));
 
-  // Move kart
-  if (leftPressed) kart -= 5;
-  if (rightPressed) kart += 5;
-  kart = constrain(kart, 0, width);
-
-  // Draw kart
+  // Move and draw player (simple rectangle for now)
   fill(0);
-  textAlign(CENTER);
-  textSize(32);
-  text("C50C", kart, height - 50);
+  rect(playerX - playerSize/2, playerY - playerSize/2, playerSize, playerSize);
 
-  // Generate doors
-  if (frameCount % 30 === 0) {
-    doors.push({ x: random(width), y: 0 });
-  }
-
-  // Move and draw doors
-  for (let i = doors.length - 1; i >= 0; i--) {
-    let d = doors[i];
-    d.y += speed;
-    fill(0);
-    textSize(24);
-    text("D00R", d.x, d.y);
-
-    // Collision detection
-    if (dist(kart, height - 50, d.x, d.y) < 40) {
-      gameOver = true;
-    }
-
-    // Remove off-screen doors
-    if (d.y > height) {
-      doors.splice(i, 1);
-      score++;
-      speed += 0.05;
-    }
-  }
-
-  // Draw ASCII arrows
-  textSize(24);
-  text("[<<]", 50, height - 20);
-  text("[>>]", width - 50, height - 20);
+  // Move obstacles (not implemented here)
+  distance += floor(speed / 5);
 }
 
-function touchStarted() {
-  if (mouseX < width / 2) {
-    leftPressed = true;
-  } else {
-    rightPressed = true;
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    playerX -= 40;
+  } else if (keyCode === RIGHT_ARROW) {
+    playerX += 40;
   }
 }
 
-function touchEnded() {
-  leftPressed = false;
-  rightPressed = false;
-}
+document.getElementById("left").addEventListener("click", () => {
+  playerX -= 40;
+});
+document.getElementById("right").addEventListener("click", () => {
+  playerX += 40;
+});
