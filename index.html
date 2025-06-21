@@ -1,43 +1,23 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Don't Touch the Door</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        touch-action: none;
-      }
-
-      canvas {
-        display: block;
-      }
-
-      #left, #right {
-        position: absolute;
-        bottom: 0;
-        width: 50%;
-        height: 40%;
-        background: transparent;
-        z-index: 10;
-      }
-
-      #left {
-        left: 0;
-      }
-
-      #right {
-        right: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="left"></div>
-    <div id="right"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-    <script src="sketch.js"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Don't Touch the Door</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <script src="sketch.js"></script>
+</body>
 </html>
