@@ -1,50 +1,39 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Don't Touch the Door</title>
-  <style>
-    body {
-      margin: 0;
-      background: #222;
-      color: white;
-      font-family: 'Courier New', Courier, monospace;
-      overflow: hidden;
-    }
-    #gameCanvas {
-      display: block;
-      background: #222;
-      width: 100vw;
-      height: 80vh;
-    }
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 20vh;
-    }
-    .button {
-      flex: 1;
-      background: #444;
-      color: white;
-      font-size: 2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #666;
-      touch-action: manipulation;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="gameCanvas"></canvas>
-  <div class="controls">
-    <div class="button" id="leftBtn">◀</div>
-    <div class="button" id="rightBtn">▶</div>
-  </div>
-  <script src="game.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Don't Touch the Door</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+      #left, #right {
+        position: absolute;
+        bottom: 10px;
+        width: 45vw;
+        height: 80px;
+        font-size: 2em;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.4);
+        border: none;
+        border-radius: 10px;
+      }
+      #left {
+        left: 5vw;
+      }
+      #right {
+        right: 5vw;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="left">⬅️</button>
+    <button id="right">➡️</button>
+    <script src="sketch.js"></script>
+  </body>
 </html>
