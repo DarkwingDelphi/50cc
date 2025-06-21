@@ -5,6 +5,7 @@ let bgHue = 0;
 let gameOver = false;
 let speed = 2;
 let spawnRate = 90;
+let playerY;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -12,13 +13,13 @@ function setup() {
   textAlign(CENTER, CENTER);
   textSize(32);
   player = width / 2;
+  playerY = height - 160; // Moved up so not behind controls
 
   document.getElementById("left").addEventListener("touchstart", () => movePlayer(-1));
   document.getElementById("right").addEventListener("touchstart", () => movePlayer(1));
 }
 
 function draw() {
-  // Rainbow road background ramping up intensity
   let saturation = constrain(score, 0, 100);
   let brightness = constrain(score, 30, 100);
   for (let y = 0; y < height; y++) {
@@ -36,15 +37,15 @@ function draw() {
     // Player
     fill(0, 0, 100);
     textSize(48);
-    text("c50c", player, height - 60);
+    text("c50c", player, playerY);
 
-    // Increase difficulty
+    // Difficulty
     if (frameCount % 200 === 0) {
       speed += 0.2;
       spawnRate = max(20, spawnRate - 3);
     }
 
-    // Spawn obstacles
+    // Spawn
     if (frameCount % spawnRate === 0) {
       obstacles.push({
         x: random(50, width - 50),
@@ -54,24 +55,30 @@ function draw() {
       });
     }
 
-    // Draw and move obstacles
+    // Obstacle loop
     for (let i = obstacles.length - 1; i >= 0; i--) {
       let o = obstacles[i];
-      textSize(48 * o.sizeFactor);
+      let size = 48 * o.sizeFactor;
+      textSize(size);
 
-      // Ghost trail
+      // Trail
       for (let t = 0; t < o.trailColors.length; t++) {
         fill(o.trailColors[t]);
         text("d00r", o.x, o.y - t * 10);
       }
 
+      // Main
       fill(0, 0, 100);
       text("d00r", o.x, o.y);
-
       o.y += speed;
 
-      // Collision
-      if (dist(o.x, o.y, player, height - 60) < 40 * o.sizeFactor) {
+      // Improved bounding box collision
+      let playerW = textWidth("c50c");
+      let obstacleW = textWidth("d00r") * o.sizeFactor;
+      if (
+        abs(o.x - player) < (obstacleW + playerW) / 2 &&
+        abs(o.y - playerY) < size / 2
+      ) {
         gameOver = true;
       }
 
