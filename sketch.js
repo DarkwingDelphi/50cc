@@ -1,93 +1,90 @@
-
 let car;
-let carSize = 40;
-let carY;
 let obstacles = [];
-let gameOver = false;
-let distance = 0;
-let leftPressed = false;
-let rightPressed = false;
+let score = 0;
+let leftButton, rightButton;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  car = width / 2;
-  carY = height - 60;
+  car = new C50C(width / 2, height - 100);
+  leftButton = createButton("◀");
+  rightButton = createButton("▶");
+  leftButton.position(40, height - 140);
+  rightButton.position(width - 80, height - 140);
+  leftButton.size(60, 60);
+  rightButton.size(60, 60);
+  leftButton.style('font-size', '32px');
+  rightButton.style('font-size', '32px');
+  leftButton.mousePressed(() => car.move(-1));
+  rightButton.mousePressed(() => car.move(1));
 }
 
 function draw() {
-  if (gameOver) {
-    background(255, 0, 0);
-    fill(0, 0, 139);
-    textSize(32);
-    textAlign(CENTER, CENTER);
-    text("CRASH! You made it " + distance + " meters", width / 2, height / 2);
-    return;
-  }
-
-  setGradient(0, 0, width, height, color(255, 0, 255), color(0, 255, 255));
-
-  drawCar(car, carY);
-  moveCar();
-  handleObstacles();
-  drawUI();
-}
-
-function drawCar(x, y) {
-  fill(0);
-  rect(x - 20, y - 20, 40, 40); // body
+  background(lerpColor(color('#ff00ff'), color('#00ffff'), frameCount % 120 / 120));
   fill(255);
-  rect(x - 25, y - 20, 5, 20); // left door
-  rect(x + 20, y - 20, 5, 20); // right door
-}
+  textSize(24);
+  textAlign(CENTER, TOP);
+  text("Score: " + score, width / 2, 10);
 
-function moveCar() {
-  if (leftPressed) car -= 5;
-  if (rightPressed) car += 5;
-  car = constrain(car, 0 + carSize / 2, width - carSize / 2);
-}
+  car.display();
 
-function handleObstacles() {
   if (frameCount % 60 === 0) {
-    obstacles.push({ x: random(width), y: -20 });
-    distance++;
+    obstacles.push(new Obstacle(random(width), 0));
+    score++;
   }
-  for (let i = 0; i < obstacles.length; i++) {
-    obstacles[i].y += 6;
-    fill(0);
-    rect(obstacles[i].x, obstacles[i].y, 20, 20);
-    if (
-      abs(obstacles[i].x - car) < 30 &&
-      abs(obstacles[i].y - carY) < 30
-    ) {
-      gameOver = true;
+
+  for (let obs of obstacles) {
+    obs.update();
+    obs.display();
+    if (obs.hits(car)) {
+      noLoop();
+      text("Game Over", width / 2, height / 2);
     }
   }
 }
 
-function drawUI() {
-  fill(0);
-  textSize(16);
-  text("[<<<]", 10, height - 10);
-  text("[>>>]", width - 60, height - 10);
-}
+class C50C {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = 60;
+  }
 
-function mousePressed() {
-  if (mouseY > height - 40) {
-    if (mouseX < width / 2) leftPressed = true;
-    else rightPressed = true;
+  move(dir) {
+    this.x += dir * 40;
+    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+  }
+
+  display() {
+    push();
+    translate(this.x, this.y);
+    fill(0);
+    rectMode(CENTER);
+    rect(0, 0, this.size, this.size / 2); // main body
+    rect(-this.size / 3, -this.size / 4, this.size / 6, this.size / 4); // left wheel
+    rect(this.size / 3, -this.size / 4, this.size / 6, this.size / 4); // right wheel
+    pop();
   }
 }
 
-function mouseReleased() {
-  leftPressed = false;
-  rightPressed = false;
-}
+class Obstacle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.w = 40;
+    this.h = 20;
+    this.speed = 5;
+  }
 
-function setGradient(x, y, w, h, c1, c2) {
-  for (let i = y; i <= y + h; i++) {
-    let inter = map(i, y, y + h, 0, 1);
-    let c = lerpColor(c1, c2, inter);
-    stroke(c);
-    line(x, i, x + w, i);
+  update() {
+    this.y += this.speed;
+  }
+
+  display() {
+    fill(255, 0, 0);
+    rect(this.x, this.y, this.w, this.h);
+  }
+
+  hits(c) {
+    return collideRectRect(this.x, this.y, this.w, this.h, c.x - c.size/2, c.y - c.size/4, c.size, c.size/2);
   }
 }
