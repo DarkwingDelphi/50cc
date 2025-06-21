@@ -1,36 +1,34 @@
 
-let carX;
-let carY;
-let speed = 2;
+let music;
+let started = false;
+
+function preload() {
+  soundFormats('mp3');
+  music = loadSound('ambient_space_wave.mp3');
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  carX = width / 2;
-  carY = height - 100;
-  textSize(24);
-  textAlign(CENTER);
-  noStroke();
+  textAlign(CENTER, CENTER);
+  textSize(32);
+  fill(255);
 }
 
 function draw() {
-  drawGradientBackground();
-  fill('lime');
-  text("C50C", carX, carY);
-}
-
-function drawGradientBackground() {
-  for (let i = 0; i < height; i++) {
-    let inter = map(i, 0, height, 0, 1);
-    let c = lerpColor(color('#FF5F6D'), color('#FFC371'), inter);
-    stroke(c);
-    line(0, i, width, i);
+  if (!started) {
+    background(0);
+    text("Tap to Start", width / 2, height / 2);
+    return;
   }
+
+  background(0);
+  text("Game Running...", width / 2, height / 2);
 }
 
-function moveLeft() {
-  carX -= 20;
-}
-
-function moveRight() {
-  carX += 20;
+function touchStarted() {
+  if (!started) {
+    userStartAudio();
+    music.loop();
+    started = true;
+  }
 }
