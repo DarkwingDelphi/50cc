@@ -1,181 +1,129 @@
 
 let player;
-let doors = [];
+let enemies = [];
 let score = 0;
 let gameOver = false;
-let leftPressed = false;
-let rightPressed = false;
-let rampSpeed = 1;
-let doorTimer = 0;
-let lastSpawnTime = 0;
-let restartBtn;
+let restartButton;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  textAlign(CENTER, CENTER);
+  textFont('Arial Black');
   player = new Player();
-  restartBtn = document.getElementById('restartButton');
+  for (let i = 0; i < 5; i++) {
+    enemies.push(new Enemy());
+  }
+  restartButton = createButton("Restart");
+  restartButton.position(width / 2 - 40, height / 2 + 30);
+  restartButton.mousePressed(restartGame);
+  restartButton.hide();
 }
 
 function draw() {
-  if (gameOver) {
-    drawGameOver();
-    return;
-  }
+  let meters = int(score / 60);
+  background(getDynamicBackground(meters));
 
-  drawGradientBackground();
+  if (!gameOver) {
+    player.update();
+    player.display();
 
-  player.update();
-  player.show();
+    for (let e of enemies) {
+      e.update();
+      e.display();
 
-  updateDoors();
-
-  checkCollisions();
-
-  score += 0.1 * rampSpeed;
-  rampSpeed = 1 + score / 1000;
-
-  drawScore();
-}
-
-function drawGradientBackground() {
-  noFill();
-  let intensity = constrain(score % 100, 0, 100) / 100;
-
-  for (let y = 0; y < height; y++) {
-    let inter = map(y, 0, height, 0, 1);
-    let r = lerp(100, 255, inter * intensity);
-    let g = lerp(100, 100 + 155 * sin(score / 50), inter * intensity);
-    let b = lerp(100, 255 * cos(score / 60), inter * intensity);
-    stroke(r, g, b);
-    line(0, y, width, y);
-  }
-}
-
-function drawScore() {
-  fill(255);
-  textSize(24);
-  text(`${Math.floor(score)} meters`, width / 2, 30);
-}
-
-function updateDoors() {
-  if (millis() - lastSpawnTime > max(500 - score / 5, 150)) {
-    doors.push(new Door());
-    lastSpawnTime = millis();
-  }
-
-  for (let i = doors.length - 1; i >= 0; i--) {
-    doors[i].update();
-    doors[i].show();
-    if (doors[i].offscreen()) doors.splice(i, 1);
-  }
-}
-
-function checkCollisions() {
-  for (let door of doors) {
-    if (player.hits(door)) {
-      gameOver = true;
-      restartBtn.style.display = 'block';
+      if (player.hits(e)) {
+        gameOver = true;
+        restartButton.show();
+      }
     }
-  }
-}
 
-function drawGameOver() {
-  background(0);
-  fill(255);
-  textSize(28);
-  text(`You touched the door after\n${Math.floor(score)} meters`, width / 2, height / 3);
+    score++;
+    fill(255);
+    textSize(24);
+    textAlign(LEFT, TOP);
+    text(`${meters} m`, 20, 20);
+  } else {
+    fill(255);
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text(`You touched the door after ${int(score / 60)} miles`, width / 2, height / 2);
+  }
 }
 
 function restartGame() {
-  gameOver = false;
-  restartBtn.style.display = 'none';
-  player = new Player();
-  doors = [];
   score = 0;
-  rampSpeed = 1;
-}
-
-function keyPressed() {
-  if (keyCode === LEFT_ARROW) leftPressed = true;
-  if (keyCode === RIGHT_ARROW) rightPressed = true;
-}
-
-function keyReleased() {
-  if (keyCode === LEFT_ARROW) leftPressed = false;
-  if (keyCode === RIGHT_ARROW) rightPressed = false;
-}
-
-function touchStarted() {
-  if (touches.length > 0) {
-    if (touches[0].x < width / 2) leftPressed = true;
-    else rightPressed = true;
+  player = new Player();
+  enemies = [];
+  for (let i = 0; i < 5; i++) {
+    enemies.push(new Enemy());
   }
-  return false;
-}
-
-function touchEnded() {
-  leftPressed = false;
-  rightPressed = false;
-  return false;
+  gameOver = false;
+  restartButton.hide();
 }
 
 class Player {
   constructor() {
-    this.size = 40;
+    this.size = 60;
     this.x = width / 2;
-    this.y = height - this.size * 2;
+    this.y = height - this.size * 1.5;
   }
 
   update() {
-    if (leftPressed) this.x -= 10;
-    if (rightPressed) this.x += 10;
-    this.x = constrain(this.x, 0, width - this.size);
+    if (touches.length > 0) {
+      this.x = touches[0].x;
+    }
+
+    if (keyIsDown(LEFT_ARROW)) this.x -= 5;
+    if (keyIsDown(RIGHT_ARROW)) this.x += 5;
+
+    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
   }
 
-  show() {
-    let phase = (score / 50) % 1;
-    let r = lerp(255, 0, phase);
-    let g = lerp(255, 0, phase);
-    let b = lerp(255, 0, phase);
-    fill(r, g, b);
-    stroke(255);
+  display() {
+    let c = lerpColor(color(0), color(255), 1 - (score % 6000) / 6000.0);
+    fill(c);
+    stroke(0);
     strokeWeight(2);
     textSize(this.size);
-    text("c50c", this.x + this.size / 2, this.y);
+    textAlign(CENTER, CENTER);
+    text("c50c", this.x, this.y);
   }
 
-  hits(door) {
-    return collideRectRect(this.x, this.y, this.size, this.size, door.x, door.y, door.size, door.size);
+  hits(enemy) {
+    return dist(this.x, this.y, enemy.x, enemy.y) < (this.size + enemy.size) / 2;
   }
 }
 
-class Door {
+class Enemy {
   constructor() {
-    this.size = random(20, 60);
-    this.x = random(width - this.size);
-    this.y = -this.size;
-    this.speed = random(3, 6) * rampSpeed;
-    this.colorShift = random(100);
+    this.size = random(40, 100);
+    this.x = random(width);
+    this.y = random(-1000, -40);
   }
 
   update() {
-    this.y += this.speed;
+    this.y += 3 + score / 1000;
+    if (this.y > height + this.size) {
+      this.y = random(-1000, -40);
+      this.x = random(width);
+    }
   }
 
-  show() {
-    let phase = (score / 50 + this.colorShift) % 1;
-    let r = lerp(0, 255, phase);
-    let g = lerp(0, 255, 1 - phase);
-    let b = lerp(255, 0, phase);
-    fill(r, g, b);
+  display() {
+    let c = lerpColor(color(255), color(0), (score % 6000) / 6000.0);
+    fill(c);
     stroke(255);
     strokeWeight(2);
     textSize(this.size);
-    text("d00r", this.x + this.size / 2, this.y);
+    textAlign(CENTER, CENTER);
+    text("door", this.x, this.y);
   }
+}
 
-  offscreen() {
-    return this.y > height;
-  }
+function getDynamicBackground(meters) {
+  let ramp = (meters % 100) / 100;
+  if (meters < 100) return lerpColor(color(100), color(120), ramp);
+  if (meters < 200) return lerpColor(color(120), color(140), ramp);
+  if (meters < 300) return lerpColor(color(140), color(160), ramp);
+  if (meters < 400) return lerpColor(color(160), color(180), ramp);
+  return color(200);
 }
