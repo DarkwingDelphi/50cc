@@ -1,77 +1,75 @@
-
-let car;
-let carImg;
+let carX;
+let carY;
+let carSize = 40;
+let speed = 5;
 let obstacles = [];
 let score = 0;
-let bgOffset = 0;
-
-function preload() {
-  carImg = loadImage('https://darkwingdelphi.github.io/50cc/c50c.png'); // C50C sprite
-}
+let fontSize = 32;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  car = createVector(width / 2, height - 100);
-  textSize(24);
+  textAlign(CENTER, CENTER);
+  textSize(fontSize);
+  carX = width / 2;
+  carY = height - 60;
 }
 
 function draw() {
   drawRainbowBackground();
-  drawScore();
-  moveCar();
-  displayCar();
-  handleObstacles();
-  updateScore();
+
+  fill(0);
+  text("C50C", carX, carY);
+
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text("Score: " + score, 10, 10);
+
+  if (frameCount % 60 === 0) {
+    let ox = random(40, width - 40);
+    obstacles.push({ x: ox, y: 0 });
+  }
+
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    let obs = obstacles[i];
+    fill(0);
+    text("DOOR", obs.x, obs.y);
+    obs.y += 4;
+
+    if (dist(obs.x, obs.y, carX, carY) < 30) {
+      noLoop(); // Game over
+    }
+
+    if (obs.y > height) {
+      score++;
+      obstacles.splice(i, 1);
+    }
+  }
 }
 
 function drawRainbowBackground() {
   for (let y = 0; y < height; y++) {
-    let hue = (y * 0.5 + bgOffset) % 360;
-    stroke(color(`hsl(${hue}, 100%, 70%)`));
+    let inter = map(y, 0, height, 0, 1);
+    let c = lerpColor(color('#ff00ff'), color('#00ffff'), inter);
+    stroke(c);
     line(0, y, width, y);
   }
-  bgOffset += 0.5;
 }
 
-function drawScore() {
-  fill(0);
-  text("Score: " + score, 10, 30);
-}
-
-function moveCar() {
-  if (keyIsDown(LEFT_ARROW)) car.x -= 5;
-  if (keyIsDown(RIGHT_ARROW)) car.x += 5;
-  car.x = constrain(car.x, 0, width - 50);
-}
-
-function displayCar() {
-  image(carImg, car.x, car.y, 50, 100);
-}
-
-function handleObstacles() {
-  if (frameCount % 60 === 0) {
-    let x = random(0, width - 50);
-    obstacles.push(createVector(x, -50));
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    carX -= speed * 10;
+  } else if (keyCode === RIGHT_ARROW) {
+    carX += speed * 10;
   }
+}
 
-  for (let obs of obstacles) {
-    obs.y += 6;
-    fill(0);
-    rect(obs.x, obs.y, 50, 50);
-    if (collides(car, obs)) {
-      noLoop();
-      fill(255, 0, 0);
-      text("Game Over", width / 2 - 60, height / 2);
+function touchStarted() {
+  if (touches.length > 0) {
+    if (touches[0].x < width / 2) {
+      carX -= speed * 2;
+    } else {
+      carX += speed * 2;
     }
   }
-
-  obstacles = obstacles.filter(obs => obs.y < height);
-}
-
-function collides(a, b) {
-  return !(a.x + 50 < b.x || a.x > b.x + 50 || a.y + 100 < b.y || a.y > b.y + 50);
-}
-
-function updateScore() {
-  score += 1;
 }
