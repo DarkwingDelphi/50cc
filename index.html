@@ -1,39 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>50cc: Don’t Touch the Door</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      font-family: monospace;
-      background: black;
-      color: white;
-    }
-    #left, #right {
-      position: absolute;
-      bottom: 20px;
-      width: 40%;
-      height: 80px;
-      font-size: 40px;
-      opacity: 0.7;
-      background-color: white;
-      border: none;
-    }
-    #left {
-      left: 5%;
-    }
-    #right {
-      right: 5%;
-    }
-  </style>
-</head>
-<body>
-  <button id="left">&larr;</button>
-  <button id="right">&rarr;</button>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
-  <script src="sketch.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>50cc</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: linear-gradient(180deg, violet, indigo, blue, green, yellow, orange, red);
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="sketch.js"></script>
+  </body>
 </html>
