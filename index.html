@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Don't Touch the Door</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <style>
-      html, body {
+      body {
         margin: 0;
-        padding: 0;
         overflow: hidden;
         touch-action: manipulation;
+        background: black;
+        color: white;
+        font-family: sans-serif;
       }
-      canvas {
-        display: block;
+      #loading {
+        position: absolute;
+        top: 10px;
+        left: 10px;
       }
     </style>
   </head>
   <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js"></script>
+    <div id="loading">Loading...</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="sketch.js"></script>
   </body>
 </html>
+
