@@ -1,15 +1,50 @@
 
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Don't Touch the Door: Kart Crash Edition</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="sketch.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; background: #000; }
-      canvas { display: block; }
-    </style>
-  </head>
-  <body></body>
+<head>
+  <meta charset="UTF-8">
+  <title>Don't Touch the Door</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      overflow: hidden;
+    }
+    #gameCanvas {
+      display: block;
+      background: #222;
+      width: 100vw;
+      height: 80vh;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 20vh;
+    }
+    .button {
+      flex: 1;
+      background: #444;
+      color: white;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #666;
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div class="button" id="leftBtn">◀</div>
+    <div class="button" id="rightBtn">▶</div>
+  </div>
+  <script src="game.js"></script>
+</body>
 </html>
