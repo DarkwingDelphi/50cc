@@ -1,107 +1,75 @@
-
-let player;
-let doors = [];
+let carX;
+let carY;
+let carSize = 40;
+let speed = 5;
+let obstacles = [];
 let score = 0;
-let gameOver = false;
-let restartButton;
+let fontSize = 32;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  player = new Player();
   textAlign(CENTER, CENTER);
-  restartButton = createButton('Restart');
-  restartButton.position(width / 2 - 40, height / 2 + 40);
-  restartButton.mousePressed(() => {
-    score = 0;
-    gameOver = false;
-    doors = [];
-    player = new Player();
-    restartButton.hide();
-  });
-  restartButton.hide();
+  textSize(fontSize);
+  carX = width / 2;
+  carY = height - 60;
 }
 
 function draw() {
-  background(map(score % 100, 0, 100, 50, 255));
-  if (!gameOver) {
-    player.update();
-    player.show();
+  drawRainbowBackground();
 
-    if (frameCount % 60 === 0) {
-      doors.push(new Door());
+  fill(0);
+  text("C50C", carX, carY);
+
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text("Score: " + score, 10, 10);
+
+  if (frameCount % 60 === 0) {
+    let ox = random(40, width - 40);
+    obstacles.push({ x: ox, y: 0 });
+  }
+
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    let obs = obstacles[i];
+    fill(0);
+    text("DOOR", obs.x, obs.y);
+    obs.y += 4;
+
+    if (dist(obs.x, obs.y, carX, carY) < 30) {
+      noLoop(); // Game over
     }
 
-    for (let i = doors.length - 1; i >= 0; i--) {
-      doors[i].update();
-      doors[i].show();
-      if (player.hits(doors[i])) {
-        gameOver = true;
-        restartButton.show();
-      }
-      if (doors[i].offscreen()) {
-        doors.splice(i, 1);
-      }
+    if (obs.y > height) {
+      score++;
+      obstacles.splice(i, 1);
     }
-
-    score += 0.1;
-    fill(255);
-    textSize(24);
-    text("Distance: " + nf(score, 1, 1) + "m", width / 2, 30);
-  } else {
-    fill(255, 0, 0);
-    textSize(32);
-    text("You touched the door after " + nf(score, 1, 1) + " meters", width / 2, height / 2);
   }
 }
 
-class Player {
-  constructor() {
-    this.x = width / 2;
-    this.y = height - 60;
-    this.size = 40;
-  }
-
-  update() {
-    if (keyIsDown(LEFT_ARROW)) this.x -= 5;
-    if (keyIsDown(RIGHT_ARROW)) this.x += 5;
-    this.x = constrain(this.x, 0, width);
-  }
-
-  show() {
-    fill(255);
-    stroke(0);
-    strokeWeight(2);
-    textSize(this.size);
-    text("c50c", this.x, this.y);
-  }
-
-  hits(door) {
-    return collideRectRect(this.x - 20, this.y - 20, 40, 40, door.x, door.y, door.w, door.h);
+function drawRainbowBackground() {
+  for (let y = 0; y < height; y++) {
+    let inter = map(y, 0, height, 0, 1);
+    let c = lerpColor(color('#ff00ff'), color('#00ffff'), inter);
+    stroke(c);
+    line(0, y, width, y);
   }
 }
 
-class Door {
-  constructor() {
-    this.x = random(width);
-    this.y = 0;
-    this.w = 60;
-    this.h = 40;
-    this.speed = 4;
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    carX -= speed * 10;
+  } else if (keyCode === RIGHT_ARROW) {
+    carX += speed * 10;
   }
+}
 
-  update() {
-    this.y += this.speed;
-  }
-
-  show() {
-    fill(255);
-    stroke(0);
-    strokeWeight(2);
-    textSize(32);
-    text("door", this.x, this.y);
-  }
-
-  offscreen() {
-    return this.y > height;
+function touchStarted() {
+  if (touches.length > 0) {
+    if (touches[0].x < width / 2) {
+      carX -= speed * 2;
+    } else {
+      carX += speed * 2;
+    }
   }
 }
