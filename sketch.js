@@ -1,95 +1,112 @@
-
-let car;
-let carX;
-let speed;
+let player;
 let doors = [];
-let distance;
+let distance = 0;
+let speed = 2;
+let leftPressed = false;
+let rightPressed = false;
 let gameOver = false;
-let moveLeft = false;
-let moveRight = false;
+let rainbowOffset = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  car = "C50C";
-  carX = width / 2;
-  speed = 2;
-  distance = 0;
+  textAlign(CENTER, CENTER);
+  textSize(24);
+  player = {
+    x: width / 2,
+    y: height - 80,
+    size: 30
+  };
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     doors.push({
-      x: random(0, width - 100),
-      y: random(-1000, 0),
+      x: random(width),
+      y: random(-1000, 0)
     });
   }
-
-  document.getElementById("left").ontouchstart = () => moveLeft = true;
-  document.getElementById("left").ontouchend = () => moveLeft = false;
-  document.getElementById("right").ontouchstart = () => moveRight = true;
-  document.getElementById("right").ontouchend = () => moveRight = false;
 }
 
 function draw() {
   drawRainbowBackground();
+
   if (gameOver) {
     fill(255);
     textSize(32);
-    textAlign(CENTER, CENTER);
     text("You crashed!
-Distance: " + floor(distance), width / 2, height / 2);
+Distance: " + distance, width / 2, height / 2);
     return;
   }
 
-  distance += 0.1;
-  speed += 0.001;
-
-  if (moveLeft) carX -= 5;
-  if (moveRight) carX += 5;
-
-  carX = constrain(carX, 0, width - 60);
-
-  fill(255);
+  fill(0, 255, 0);
   textSize(32);
-  textAlign(LEFT, TOP);
-  text("Distance: " + floor(distance), 10, 10);
-
-  fill(0);
-  textSize(32);
-  textAlign(CENTER, CENTER);
-  text(car, carX + 30, height - 60);
+  text("C50C", player.x, player.y);
 
   for (let door of doors) {
-    fill(255, 0, 0);
-    rect(door.x, door.y, 60, 100);
-    fill(255);
-    textSize(16);
-    textAlign(CENTER, CENTER);
-    text("D00R", door.x + 30, door.y + 50);
+    fill(255, 165, 0);
+    textSize(24);
+    text("D00R", door.x, door.y);
     door.y += speed;
-
-    if (
-      door.y + 100 >= height - 60 &&
-      door.x < carX + 60 &&
-      door.x + 60 > carX
-    ) {
+    if (collides(player, door)) {
       gameOver = true;
     }
+  }
 
-    if (door.y > height) {
-      door.y = random(-200, -100);
-      door.x = random(0, width - 60);
+  doors = doors.filter(door => door.y < height + 50);
+  while (doors.length < 10) {
+    doors.push({
+      x: random(width),
+      y: random(-200, 0)
+    });
+  }
+
+  if (leftPressed) player.x -= 5;
+  if (rightPressed) player.x += 5;
+  player.x = constrain(player.x, 0, width);
+
+  distance += floor(speed);
+  speed += 0.001;
+
+  fill(255);
+  textSize(16);
+  text("Distance: " + distance, width / 2, 20);
+
+  drawControls();
+}
+
+function drawControls() {
+  fill(100);
+  rect(0, height - 100, width / 2, 100);
+  rect(width / 2, height - 100, width / 2, 100);
+
+  fill(255);
+  textSize(48);
+  text("⬅️", width / 4, height - 50);
+  text("➡️", 3 * width / 4, height - 50);
+}
+
+function touchStarted() {
+  if (mouseY > height - 100) {
+    if (mouseX < width / 2) {
+      leftPressed = true;
+    } else {
+      rightPressed = true;
     }
   }
 }
 
+function touchEnded() {
+  leftPressed = false;
+  rightPressed = false;
+}
+
+function collides(p, d) {
+  return dist(p.x, p.y, d.x, d.y) < 30;
+}
+
 function drawRainbowBackground() {
   for (let y = 0; y < height; y++) {
-    let inter = map(y, 0, height, 0, 1);
-    let c = lerpColor(
-      color(255, 0, 0),
-      color(0, 0, 255),
-      inter
-    );
-    stroke(c);
+    let hue = (y * 0.5 + rainbowOffset) % 360;
+    stroke(color('hsl(' + hue + ', 100%, 50%)'));
     line(0, y, width, y);
   }
+  rainbowOffset += 0.5;
 }
