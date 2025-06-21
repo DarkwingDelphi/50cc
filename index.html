@@ -1,22 +1,38 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>C50C Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Don't Touch the Door</title>
   <style>
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
+      background: black;
       overflow: hidden;
-      font-family: monospace;
     }
     canvas {
       display: block;
     }
+    #restartButton {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      padding: 12px 20px;
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <script src="sketch.js"></script>
+  <button id="restartButton" onclick="restartGame()">Restart</button>
 </body>
 </html>
