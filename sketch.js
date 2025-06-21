@@ -1,88 +1,108 @@
-
-let car;
-let doors = [];
-let doorColors = ['#FF69B4', '#00FFFF', '#FFFF00', '#FFA500', '#00FF00'];
+let player;
+let obstacles = [];
 let score = 0;
+let bgHue = 0;
 let gameOver = false;
 let speed = 2;
-let spawnRate = 60;
-let bgOffset = 0;
+let spawnRate = 90;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  colorMode(HSB, 360, 100, 100, 100);
   textAlign(CENTER, CENTER);
   textSize(32);
-  car = width / 2;
+  player = width / 2;
+
+  document.getElementById("left").addEventListener("touchstart", () => movePlayer(-1));
+  document.getElementById("right").addEventListener("touchstart", () => movePlayer(1));
 }
 
 function draw() {
-  // Rainbow background
+  // Rainbow road background ramping up intensity
+  let saturation = constrain(score, 0, 100);
+  let brightness = constrain(score, 30, 100);
   for (let y = 0; y < height; y++) {
-    let hue = (y + bgOffset) % height / height;
-    stroke(color('hsb(' + (hue * 360) + ', 100%, 100%)'));
+    stroke((bgHue + y / 5) % 360, saturation, brightness);
     line(0, y, width, y);
   }
-  bgOffset += 1;
+  bgHue = (bgHue + 0.5) % 360;
 
-  if (gameOver) {
-    fill(0);
-    rect(0, 0, width, height);
-    fill(255);
-    text("You touched the door after " + int(score) + " meters", width / 2, height / 2);
-    return;
+  if (!gameOver) {
+    score += 0.1;
+    textSize(24);
+    fill(0, 0, 100);
+    text(`Meters: ${floor(score)}`, width / 2, 30);
+
+    // Player
+    fill(0, 0, 100);
+    textSize(48);
+    text("c50c", player, height - 60);
+
+    // Increase difficulty
+    if (frameCount % 200 === 0) {
+      speed += 0.2;
+      spawnRate = max(20, spawnRate - 3);
+    }
+
+    // Spawn obstacles
+    if (frameCount % spawnRate === 0) {
+      obstacles.push({
+        x: random(50, width - 50),
+        y: -60,
+        sizeFactor: random([0.5, 1.0, 1.5]),
+        trailColors: Array.from({length: int(random(3, 6))}, () => color(random(360), 80, 80, 50))
+      });
+    }
+
+    // Draw and move obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      let o = obstacles[i];
+      textSize(48 * o.sizeFactor);
+
+      // Ghost trail
+      for (let t = 0; t < o.trailColors.length; t++) {
+        fill(o.trailColors[t]);
+        text("d00r", o.x, o.y - t * 10);
+      }
+
+      fill(0, 0, 100);
+      text("d00r", o.x, o.y);
+
+      o.y += speed;
+
+      // Collision
+      if (dist(o.x, o.y, player, height - 60) < 40 * o.sizeFactor) {
+        gameOver = true;
+      }
+
+      if (o.y > height + 60) {
+        obstacles.splice(i, 1);
+      }
+    }
+  } else {
+    fill(0, 0, 100);
+    textSize(36);
+    text(`You touched the door after ${floor(score)} meters`, width / 2, height / 2);
+    textSize(24);
+    text("Tap to restart", width / 2, height / 2 + 40);
   }
+}
 
-  fill(255);
-  text("Meters: " + int(score), width / 2, 30);
-
-  fill(255);
-  textSize(48);
-  text("c50c", car, height - 60);
-
-  // Update and show doors
-  for (let i = doors.length - 1; i >= 0; i--) {
-    let door = doors[i];
-    door.y += door.speed;
-
-    // Ghosting trail
-    for (let t = 1; t <= 4; t++) {
-      fill(random(doorColors));
-      textSize(door.size);
-      text("d00r", door.x, door.y - t * 5);
-    }
-
-    fill(255);
-    textSize(door.size);
-    text("d00r", door.x, door.y);
-
-    if (abs(door.y - (height - 60)) < 20 && abs(door.x - car) < 50) {
-      gameOver = true;
-    }
-
-    if (door.y > height + 50) {
-      doors.splice(i, 1);
-    }
-  }
-
-  if (frameCount % spawnRate === 0) {
-    let newDoor = {
-      x: random(50, width - 50),
-      y: -50,
-      speed: speed + random(0, 2),
-      size: random([24, 48]) // half or 1.5x normal (32)
-    };
-    doors.push(newDoor);
-    score += 1;
-    if (spawnRate > 20) spawnRate -= 1;
-    speed += 0.05;
+function movePlayer(dir) {
+  if (!gameOver) {
+    player += dir * 30;
+    player = constrain(player, 40, width - 40);
   }
 }
 
 function touchStarted() {
-  if (mouseX < width / 2) {
-    car -= 50;
-  } else {
-    car += 50;
+  if (gameOver) {
+    score = 0;
+    obstacles = [];
+    player = width / 2;
+    speed = 2;
+    spawnRate = 90;
+    gameOver = false;
   }
   return false;
 }
