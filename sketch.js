@@ -1,127 +1,88 @@
+
 let car;
 let doors = [];
-let leftPressed = false;
-let rightPressed = false;
-let gameOver = false;
+let doorColors = ['#FF69B4', '#00FFFF', '#FFFF00', '#FFA500', '#00FF00'];
 let score = 0;
-let startTime;
-let state = 'title';
+let gameOver = false;
+let speed = 2;
+let spawnRate = 60;
+let bgOffset = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textSize(32);
-  car = new Car();
+  car = width / 2;
 }
 
 function draw() {
-  background(0);
-  if (state === 'title') {
+  // Rainbow background
+  for (let y = 0; y < height; y++) {
+    let hue = (y + bgOffset) % height / height;
+    stroke(color('hsb(' + (hue * 360) + ', 100%, 100%)'));
+    line(0, y, width, y);
+  }
+  bgOffset += 1;
+
+  if (gameOver) {
+    fill(0);
+    rect(0, 0, width, height);
     fill(255);
-    textSize(48);
-    text("DON'T TOUCH THE DOOR", width / 2, height / 3);
-    textSize(24);
-    text("Tap to Start", width / 2, height / 2);
-  } else if (state === 'game') {
-    if (!gameOver) {
-      playGame();
-    } else {
-      fill(255, 0, 0);
-      textSize(32);
-      text("YOU TOUCHED THE DOOR AFTER " + score + " METERS", width / 2, height / 2);
-      text("Tap to Restart", width / 2, height / 2 + 40);
-    }
+    text("You touched the door after " + int(score) + " meters", width / 2, height / 2);
+    return;
   }
-}
 
-function playGame() {
-  score = int((millis() - startTime) / 100);
   fill(255);
-  textSize(20);
-  text(score + " METERS", width / 2, 30);
+  text("Meters: " + int(score), width / 2, 30);
 
-  if (leftPressed) car.move(-1);
-  if (rightPressed) car.move(1);
-  car.show();
+  fill(255);
+  textSize(48);
+  text("c50c", car, height - 60);
 
-  if (frameCount % int(60 - min(score / 10, 40)) === 0) {
-    doors.push(new Door());
-  }
-
+  // Update and show doors
   for (let i = doors.length - 1; i >= 0; i--) {
-    doors[i].update();
-    doors[i].show();
-    if (doors[i].hits(car)) {
+    let door = doors[i];
+    door.y += door.speed;
+
+    // Ghosting trail
+    for (let t = 1; t <= 4; t++) {
+      fill(random(doorColors));
+      textSize(door.size);
+      text("d00r", door.x, door.y - t * 5);
+    }
+
+    fill(255);
+    textSize(door.size);
+    text("d00r", door.x, door.y);
+
+    if (abs(door.y - (height - 60)) < 20 && abs(door.x - car) < 50) {
       gameOver = true;
     }
-    if (doors[i].offscreen()) {
+
+    if (door.y > height + 50) {
       doors.splice(i, 1);
     }
   }
+
+  if (frameCount % spawnRate === 0) {
+    let newDoor = {
+      x: random(50, width - 50),
+      y: -50,
+      speed: speed + random(0, 2),
+      size: random([24, 48]) // half or 1.5x normal (32)
+    };
+    doors.push(newDoor);
+    score += 1;
+    if (spawnRate > 20) spawnRate -= 1;
+    speed += 0.05;
+  }
 }
 
-function mousePressed() {
-  if (state === 'title') {
-    state = 'game';
-    score = 0;
-    gameOver = false;
-    doors = [];
-    startTime = millis();
-  } else if (gameOver) {
-    state = 'title';
+function touchStarted() {
+  if (mouseX < width / 2) {
+    car -= 50;
   } else {
-    if (mouseX < width / 2) {
-      leftPressed = true;
-    } else {
-      rightPressed = true;
-    }
+    car += 50;
   }
-}
-
-function mouseReleased() {
-  leftPressed = false;
-  rightPressed = false;
-}
-
-class Car {
-  constructor() {
-    this.w = 80;
-    this.h = 40;
-    this.x = width / 2;
-    this.y = height - 100;
-  }
-  move(dir) {
-    this.x += dir * 10;
-    this.x = constrain(this.x, this.w / 2, width - this.w / 2);
-  }
-  show() {
-    fill(255);
-    textSize(32);
-    text("c50c", this.x, this.y);
-  }
-}
-
-class Door {
-  constructor() {
-    this.w = 80;
-    this.h = 40;
-    this.x = random(this.w / 2, width - this.w / 2);
-    this.y = -40;
-    this.speed = 3 + score / 100;
-    this.color = color(random(255), random(255), random(255));
-  }
-  update() {
-    this.y += this.speed;
-  }
-  show() {
-    fill(this.color);
-    textSize(32);
-    text("d00r", this.x, this.y);
-  }
-  offscreen() {
-    return this.y > height + 20;
-  }
-  hits(car) {
-    return abs(this.x - car.x) < 40 && abs(this.y - car.y) < 20;
-  }
+  return false;
 }
