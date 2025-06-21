@@ -1,22 +1,40 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>C50C Game</title>
+  <title>Don't Touch the Door</title>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       overflow: hidden;
       font-family: monospace;
+      background: black;
+      color: white;
     }
     canvas {
       display: block;
+    }
+    #restartButton {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      padding: 10px 20px;
+      display: none;
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <script src="sketch.js"></script>
+  <button id="restartButton" onclick="location.reload()">Restart</button>
 </body>
 </html>
