@@ -1,81 +1,77 @@
+
 let car;
-let carWidth = 40;
-let carHeight = 60;
-let score = 0;
+let carImg;
 let obstacles = [];
+let score = 0;
+let bgOffset = 0;
+
+function preload() {
+  carImg = loadImage('https://darkwingdelphi.github.io/50cc/c50c.png'); // C50C sprite
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  car = createVector(width / 2, height - carHeight - 20);
+  car = createVector(width / 2, height - 100);
+  textSize(24);
 }
 
 function draw() {
-  background('#9575CD');
-
+  drawRainbowBackground();
   drawScore();
   moveCar();
-  drawCar();
+  displayCar();
   handleObstacles();
-  checkCollisions();
+  updateScore();
+}
+
+function drawRainbowBackground() {
+  for (let y = 0; y < height; y++) {
+    let hue = (y * 0.5 + bgOffset) % 360;
+    stroke(color(`hsl(${hue}, 100%, 70%)`));
+    line(0, y, width, y);
+  }
+  bgOffset += 0.5;
 }
 
 function drawScore() {
-  fill(255);
-  textSize(24);
-  textAlign(LEFT, TOP);
-  text("Score: " + score, 20, 20);
+  fill(0);
+  text("Score: " + score, 10, 30);
 }
 
 function moveCar() {
-  if (keyIsDown(LEFT_ARROW)) {
-    car.x -= 5;
-  }
-  if (keyIsDown(RIGHT_ARROW)) {
-    car.x += 5;
-  }
-  car.x = constrain(car.x, 0, width - carWidth);
+  if (keyIsDown(LEFT_ARROW)) car.x -= 5;
+  if (keyIsDown(RIGHT_ARROW)) car.x += 5;
+  car.x = constrain(car.x, 0, width - 50);
 }
 
-function drawCar() {
-  fill(255, 0, 0);
-  rect(car.x, car.y, carWidth, carHeight, 10);
-  fill(0);
-  rect(car.x + 5, car.y + 10, 10, 10); // left headlight
-  rect(car.x + carWidth - 15, car.y + 10, 10, 10); // right headlight
+function displayCar() {
+  image(carImg, car.x, car.y, 50, 100);
 }
 
 function handleObstacles() {
   if (frameCount % 60 === 0) {
-    let x = random(width - 30);
-    obstacles.push(createVector(x, -30));
+    let x = random(0, width - 50);
+    obstacles.push(createVector(x, -50));
   }
 
-  for (let i = obstacles.length - 1; i >= 0; i--) {
-    let o = obstacles[i];
+  for (let obs of obstacles) {
+    obs.y += 6;
     fill(0);
-    rect(o.x, o.y, 30, 30);
-    o.y += 4;
-
-    if (o.y > height) {
-      obstacles.splice(i, 1);
-      score++;
-    }
-  }
-}
-
-function checkCollisions() {
-  for (let o of obstacles) {
-    if (
-      car.x < o.x + 30 &&
-      car.x + carWidth > o.x &&
-      car.y < o.y + 30 &&
-      car.y + carHeight > o.y
-    ) {
+    rect(obs.x, obs.y, 50, 50);
+    if (collides(car, obs)) {
       noLoop();
       fill(255, 0, 0);
-      textSize(48);
-      textAlign(CENTER, CENTER);
-      text("Game Over", width / 2, height / 2);
+      text("Game Over", width / 2 - 60, height / 2);
     }
   }
+
+  obstacles = obstacles.filter(obs => obs.y < height);
+}
+
+function collides(a, b) {
+  return !(a.x + 50 < b.x || a.x > b.x + 50 || a.y + 100 < b.y || a.y > b.y + 50);
+}
+
+function updateScore() {
+  score += 1;
 }
