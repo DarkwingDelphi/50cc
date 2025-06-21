@@ -17,15 +17,11 @@
 
       #left, #right {
         position: absolute;
-        bottom: 30px;
+        bottom: 0;
         width: 50%;
-        height: 100px;
-        font-size: 32px;
-        color: white;
-        background-color: rgba(0, 0, 0, 0.4);
-        text-align: center;
-        line-height: 100px;
-        user-select: none;
+        height: 40%;
+        background: transparent;
+        z-index: 10;
       }
 
       #left {
@@ -38,8 +34,8 @@
     </style>
   </head>
   <body>
-    <div id="left">&lt;</div>
-    <div id="right">&gt;</div>
+    <div id="left"></div>
+    <div id="right"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <script src="sketch.js"></script>
