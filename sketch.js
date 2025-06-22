@@ -1,129 +1,134 @@
 
 let player;
-let obstacles = [];
+let doors = [];
 let score = 0;
-let gameOver = false;
-let gameStarted = false;
-let leftPressed = false;
-let rightPressed = false;
-let bgColorIntensity = 0;
+let gameState = "START";
+let backgroundStage = 0;
+let bgColor;
+let lastBgChange = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  textAlign(CENTER, CENTER);
-  rectMode(CENTER);
   player = new Player();
+  resetGame();
+}
+
+function resetGame() {
+  doors = [];
+  score = 0;
+  backgroundStage = 0;
+  bgColor = color(0);
+  lastBgChange = 0;
+  player.reset();
+  gameState = "PLAY";
 }
 
 function draw() {
-  if (!gameStarted) {
+  if (gameState === "START") {
     background(0);
     fill(255);
     textSize(32);
-    text("Don't Touch the Door", width / 2, height / 2 - 20);
-    textSize(20);
-    text("Tap to Start", width / 2, height / 2 + 20);
-    return;
-  }
-
-  if (gameOver) {
+    textAlign(CENTER);
+    text("Don't Touch the Door", width / 2, height / 2);
+    textSize(16);
+    text("Tap to start", width / 2, height / 2 + 30);
+  } else if (gameState === "PLAY") {
+    drawGame();
+  } else if (gameState === "END") {
     background(0);
     fill(255);
     textSize(32);
-    text("You touched the door after " + floor(score) + " miles", width / 2, height / 2);
-    textSize(20);
-    text("Tap to Restart", width / 2, height / 2 + 40);
-    return;
+    textAlign(CENTER);
+    text("Game Over", width / 2, height / 2);
+    textSize(16);
+    text("Tap to restart", width / 2, height / 2 + 30);
+  }
+}
+
+function drawGame() {
+  background(bgColor);
+  score += 0.1;
+
+  if (score - lastBgChange >= 100) {
+    backgroundStage++;
+    bgColor = color(random(255), random(255), random(255));
+    lastBgChange = score;
   }
 
-  bgColorIntensity = min(255, score * 0.1);
-  background(bgColorIntensity, bgColorIntensity * 0.8, bgColorIntensity * 0.6);
+  fill(255);
+  textSize(14);
+  textAlign(LEFT);
+  text("Score: " + int(score) + " miles", 10, 20);
 
   player.update();
   player.show();
 
-  if (frameCount % max(20 - floor(score / 100), 5) === 0) {
-    obstacles.push(new Obstacle());
+  if (frameCount % 60 === 0) {
+    doors.push(new Door());
   }
 
-  for (let i = obstacles.length - 1; i >= 0; i--) {
-    obstacles[i].update();
-    obstacles[i].show();
-    if (obstacles[i].hits(player)) {
-      gameOver = true;
+  for (let i = doors.length - 1; i >= 0; i--) {
+    doors[i].update();
+    doors[i].show();
+
+    if (doors[i].hits(player)) {
+      gameState = "END";
     }
-    if (obstacles[i].offscreen()) {
-      obstacles.splice(i, 1);
-      score += 1;
+
+    if (doors[i].offscreen()) {
+      doors.splice(i, 1);
     }
   }
-
-  fill(255);
-  textSize(16);
-  textAlign(LEFT, TOP);
-  text("Score: " + floor(score) + " miles", 10, 10);
 }
 
 function touchStarted() {
-  if (!gameStarted) {
-    gameStarted = true;
-    return;
-  }
-  if (gameOver) {
+  if (gameState === "START" || gameState === "END") {
     resetGame();
-    return;
-  }
-  if (mouseX < width / 2) {
-    player.move(-1);
   } else {
-    player.move(1);
+    player.jump();
   }
-}
-
-function keyPressed() {
-  if (keyCode === LEFT_ARROW) {
-    player.move(-1);
-  } else if (keyCode === RIGHT_ARROW) {
-    player.move(1);
-  }
-}
-
-function resetGame() {
-  score = 0;
-  obstacles = [];
-  player = new Player();
-  gameOver = false;
 }
 
 class Player {
   constructor() {
     this.size = 40;
-    this.x = width / 2;
-    this.y = height - this.size * 1.5;
+    this.reset();
   }
 
-  update() {}
+  reset() {
+    this.x = width / 2;
+    this.y = height - this.size * 2;
+    this.vy = 0;
+    this.gravity = 1.2;
+    this.lift = -20;
+  }
 
-  move(dir) {
-    this.x += dir * this.size * 1.5;
-    this.x = constrain(this.x, this.size / 2, width - this.size / 2);
+  jump() {
+    this.vy += this.lift;
+  }
+
+  update() {
+    this.vy += this.gravity;
+    this.y += this.vy;
+
+    if (this.y > height - this.size) {
+      this.y = height - this.size;
+      this.vy = 0;
+    }
   }
 
   show() {
-    fill(255 - bgColorIntensity, 255 - bgColorIntensity, 255);
-    textSize(32);
-    textAlign(CENTER, CENTER);
-    text("c50c", this.x, this.y);
+    fill(255);
+    rect(this.x, this.y, this.size, this.size);
   }
 }
 
-class Obstacle {
+class Door {
   constructor() {
-    this.size = random(20, 60);
-    this.x = random(this.size / 2, width - this.size / 2);
-    this.y = -this.size;
-    this.speed = 2 + score * 0.01;
-    this.color = color(random(255), random(255), random(255));
+    this.x = random(width);
+    this.y = -20;
+    this.size = 30;
+    this.speed = 4;
   }
 
   update() {
@@ -131,16 +136,17 @@ class Obstacle {
   }
 
   show() {
-    fill(this.color);
-    textSize(this.size / 2);
+    fill(random(255), random(255), random(255));
+    textSize(16);
+    textAlign(CENTER);
     text("d00r", this.x, this.y);
   }
 
-  offscreen() {
-    return this.y > height + this.size;
+  hits(player) {
+    return collideRectCircle(player.x, player.y, player.size, player.size, this.x, this.y, this.size);
   }
 
-  hits(player) {
-    return dist(this.x, this.y, player.x, player.y) < (this.size + player.size) / 2;
+  offscreen() {
+    return this.y > height;
   }
 }
