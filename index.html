@@ -1,31 +1,35 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Don't Touch the Door</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>c50c</title>
     <style>
-      body {
+      html, body {
         margin: 0;
+        padding: 0;
         overflow: hidden;
         background: black;
-        color: white;
         font-family: monospace;
       }
-      #version {
+      canvas {
+        display: block;
+      }
+      .version-tag {
         position: absolute;
         top: 5px;
         left: 5px;
-        font-size: 10px;
-        background: #333;
-        padding: 2px 4px;
+        font-size: 0.7em;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        padding: 2px 5px;
         border-radius: 3px;
       }
     </style>
   </head>
   <body>
-    <div id="version">v1.4.0</div>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.min.js"></script>
     <script src="sketch.js"></script>
+    <div class="version-tag">v1.4.1</div>
   </body>
 </html>
