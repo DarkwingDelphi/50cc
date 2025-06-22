@@ -1,3 +1,4 @@
+
 let player;
 let obstacles = [];
 let score = 0;
