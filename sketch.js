@@ -1,150 +1,126 @@
-// version 1.5.3
+
+// 50cc v1.5.4
+
 let player;
 let doors = [];
 let score = 0;
 let gameOver = false;
-let version = "1.5.3";
-let speed = 3;
-let doorSpawnRate = 80;
+let version = "v1.5.4";
 let bgElements = [];
-let frameColorShift = 0;
-let carImg;
+let carImage;
+let doorGhosts = [];
 
 function preload() {
-  carImg = loadImage("https://upload.wikimedia.org/wikipedia/commons/3/37/Go-kart_carting_frame.png");
+  carImage = loadImage('https://darkwingdelphi.github.io/50cc/assets/c50c.png');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  resetGame();
-}
-
-function resetGame() {
   player = new Player();
-  doors = [];
-  bgElements = [];
-  score = 0;
-  speed = 3;
-  doorSpawnRate = 80;
-  frameColorShift = 0;
-  gameOver = false;
-  loop();
 }
 
 function draw() {
+  background(0);
+
   if (!gameOver) {
-    drawBackground();
-    handleGameplay();
-  } else {
-    drawGameOver();
-  }
-}
+    score += deltaTime / 100;
 
-function drawBackground() {
-  colorMode(HSB, 360, 100, 100);
-  let intensity = min(100, score);
-  background((frameColorShift + score) % 360, intensity, intensity);
-  frameColorShift += 0.05;
+    updateBackground();
+    for (let e of bgElements) {
+      e.display();
+    }
 
-  // Background elements every 100 meters
-  let thresholds = [100, 200, 300, 400, 500];
-  thresholds.forEach((thresh, i) => {
-    if (score > thresh) {
-      fill((frameCount + i * 30) % 360, 100, 100, 0.1);
-      noStroke();
-      for (let j = 0; j < 20; j++) {
-        ellipse(
-          random(width),
-          random(height),
-          random(20, 50),
-          random(20, 50)
-        );
+    player.update();
+    player.display();
+
+    if (frameCount % 60 === 0) {
+      doors.push(new Door());
+    }
+
+    for (let i = doors.length - 1; i >= 0; i--) {
+      doors[i].update();
+      doors[i].display();
+
+      if (doors[i].hits(player)) {
+        gameOver = true;
+      }
+
+      if (doors[i].offscreen()) {
+        doors.splice(i, 1);
       }
     }
-  });
-}
 
-function handleGameplay() {
-  score += 0.05;
-  if (frameCount % floor(doorSpawnRate) === 0) {
-    doors.push(new Door());
-    if (doorSpawnRate > 20) doorSpawnRate -= 0.5;
-  }
-
-  for (let i = doors.length - 1; i >= 0; i--) {
-    doors[i].update();
-    doors[i].display();
-    if (doors[i].hits(player)) {
-      gameOver = true;
-    }
-    if (doors[i].offscreen()) {
-      doors.splice(i, 1);
-    }
-  }
-
-  player.update();
-  player.display();
-
-  fill(0);
-  textSize(24);
-  textAlign(LEFT, TOP);
-  text("Miles: " + floor(score), 10, 10);
-  text("v" + version, 10, 40);
-}
-
-function drawGameOver() {
-  background(0);
-  fill(255);
-  textAlign(CENTER, CENTER);
-  textSize(32);
-  text("You touched the door after " + floor(score) + " miles", width / 2, height / 2);
-  textSize(24);
-  text("Tap to restart", width / 2, height / 2 + 40);
-  noLoop();
-}
-
-function touchStarted() {
-  if (gameOver) {
-    resetGame();
+    fill(255);
+    textSize(24);
+    text(`Miles: ${nf(score, 1, 1)}`, 20, 30);
+    text(version, 20, 60);
   } else {
-    player.move();
+    fill(255);
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text(`You touched the door after ${nf(score, 1, 1)} miles`, width / 2, height / 2);
   }
-  return false;
+}
+
+function updateBackground() {
+  if (floor(score) % 100 === 0 && !bgElements.some(e => e.milestone === floor(score))) {
+    bgElements.push(new BackgroundElement(floor(score)));
+  }
+}
+
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    player.move(-1);
+  } else if (keyCode === RIGHT_ARROW) {
+    player.move(1);
+  } else if (gameOver) {
+    resetGame();
+  }
+}
+
+function resetGame() {
+  gameOver = false;
+  score = 0;
+  player = new Player();
+  doors = [];
+  bgElements = [];
 }
 
 class Player {
   constructor() {
-    this.size = 50;
     this.x = width / 2;
     this.y = height - 100;
-    this.col = color(0);
+    this.w = 60;
+    this.h = 60;
+    this.speed = 10;
+    this.targetX = this.x;
+  }
+
+  move(dir) {
+    this.targetX += dir * 100;
   }
 
   update() {
-    let hueShift = (360 - frameColorShift) % 360;
-    this.col = color(hueShift, 100, 100);
+    this.x = lerp(this.x, this.targetX, 0.1);
   }
 
   display() {
-    fill(this.col);
-    stroke(255);
-    strokeWeight(2);
     imageMode(CENTER);
-    image(carImg, this.x, this.y, this.size * 1.5, this.size);
-  }
-
-  move() {
-    this.x = (this.x > width / 2) ? width / 2 - 100 : width / 2 + 100;
+    image(carImage, this.x, this.y, this.w, this.h);
+    noFill();
+    stroke(255);
+    rectMode(CENTER);
+    rect(this.x, this.y, this.w, this.h);
   }
 }
 
 class Door {
   constructor() {
-    this.size = random(30, 100);
-    this.x = random(width * 0.1, width * 0.9);
-    this.y = -this.size;
-    this.speed = speed + random(0, 3);
-    this.hue = (frameCount * 2) % 360;
+    this.x = random(50, width - 50);
+    this.y = -60;
+    this.w = random(30, 80);
+    this.h = random(60, 120);
+    this.speed = random(3, 6);
   }
 
   update() {
@@ -152,20 +128,36 @@ class Door {
   }
 
   display() {
-    fill(this.hue, 100, 100);
-    stroke(255);
-    strokeWeight(2);
-    rect(this.x, this.y, this.size, this.size);
+    fill(200, 0, 0, 200);
+    rect(this.x, this.y, this.w, this.h);
   }
 
-  hits(player) {
-    return !(player.x + player.size / 2 < this.x ||
-             player.x - player.size / 2 > this.x + this.size ||
-             player.y + player.size / 2 < this.y ||
-             player.y - player.size / 2 > this.y + this.size);
+  hits(p) {
+    return !(p.x + p.w / 2 < this.x - this.w / 2 ||
+             p.x - p.w / 2 > this.x + this.w / 2 ||
+             p.y + p.h / 2 < this.y - this.h / 2 ||
+             p.y - p.h / 2 > this.y + this.h / 2);
   }
 
   offscreen() {
-    return this.y > height + this.size;
+    return this.y > height + this.h;
+  }
+}
+
+class BackgroundElement {
+  constructor(milestone) {
+    this.milestone = milestone;
+    this.x = random(width);
+    this.y = random(height);
+    this.r = 0;
+    this.opacity = 0;
+  }
+
+  display() {
+    this.r += 0.5;
+    this.opacity = min(255, this.opacity + 1);
+    noFill();
+    stroke(100, 100, 255, this.opacity);
+    ellipse(this.x, this.y, this.r);
   }
 }
