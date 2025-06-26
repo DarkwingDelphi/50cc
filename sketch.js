@@ -1,5 +1,5 @@
 
-// 50cc v1.5.4
+// 50cc v1.5.4 .
 
 let player;
 let doors = [];
